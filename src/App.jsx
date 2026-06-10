@@ -2043,7 +2043,7 @@ export default function App() {
             if(navigator.share){navigator.share({title:"Mission RGO",text:txt});}
             else{navigator.clipboard?.writeText(txt);showToast("📋 Copié !");}
           }}>📤</button>
-          <button className="btn btn-danger" style={{flex:1}} onClick={async()=>{if(confirm("Supprimer ?")){await deleteM(m.id);setView("list");showToast("🗑️ Supprimée");}>🗑️ Supprimer</button>
+          <button className="btn btn-danger" style={{flex:1}} onClick={async()=>{if(confirm("Supprimer ?")){await deleteM(m.id);setView("list");showToast("🗑️ Supprimée");}}}>🗑️ Supprimer</button>
         </div>
         <div style={{height:16}}/>
       </div>
