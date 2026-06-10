@@ -2043,7 +2043,7 @@ export default function App() {
             if(navigator.share){navigator.share({title:"Mission RGO",text:txt});}
             else{navigator.clipboard?.writeText(txt);showToast("📋 Copié !");}
           }}>📤</button>
-          <button className="btn btn-danger" style={{flex:1}} onClick={async()=>{if(confirm("Supprimer ?")){await deleteM(m.id);setView("list");showToast("🗑️ Supprimée");}}}>🗑️ Supprimer</button>
+          <button className="btn btn-danger" style={{flex:1}} onClick={async()=>{if(confirm("Supprimer ?")){await deleteM(m.id);setView("list");showToast("🗑️ Supprimée");}>🗑️ Supprimer</button>
         </div>
         <div style={{height:16}}/>
       </div>
@@ -2392,7 +2392,7 @@ export default function App() {
           <div className="version-card">
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <div style={{fontFamily:"Montserrat",fontWeight:900,fontSize:18,color:"var(--orange2)"}}>🆕 Nouveautés v2.2</div>
-              <button onClick={()=>{{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);}} } style={{background:"none",border:"none",color:"var(--muted)",fontSize:24,cursor:"pointer"}}>✕</button>
+              <button onClick={()=>{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);} } style={{background:"none",border:"none",color:"var(--muted)",fontSize:24,cursor:"pointer"}}>✕</button>
             </div>
             <div style={{fontSize:13,lineHeight:1.8,color:"var(--light)"}}>
               <div style={{marginBottom:8}}>🏫 <strong>Circuits scolaires</strong> — Guidage GPS immersif avec instructions vocales 🔊/🔇</div>
@@ -2403,7 +2403,7 @@ export default function App() {
               <div style={{marginBottom:8}}>👁️ Visualisation circuit sans lancer le guidage</div>
               <div style={{marginBottom:8}}>🔐 PIN — plus de suggestion de mot de passe</div>
             </div>
-            <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={()=>{{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);}}}}>
+            <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={()=>{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);}}>
               C'est parti ! 🚀
             </button>
           </div>
