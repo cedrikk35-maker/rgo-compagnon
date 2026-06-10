@@ -1442,6 +1442,8 @@ export default function App() {
   const [savedPin, setSavedPin] = useState(() => localStorage.getItem('rgo_pin')||'');
   const [maintenance, setMaintenance] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('rgo_onboarding_done'));
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [showVersionNotes, setShowVersionNotes] = useState(() => {
     return localStorage.getItem('rgo_notes_seen') !== '2.2';
   });
