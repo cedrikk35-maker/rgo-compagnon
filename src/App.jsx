@@ -187,6 +187,8 @@ const CSS = `
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .empty{text-align:center;padding:40px 20px;color:var(--muted);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;display:flex;align-items:flex-end;justify-content:center;}
+  .version-modal{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .version-card{background:linear-gradient(160deg,#2a0808,#3d0a0a);border:2px solid var(--orange);border-radius:20px;padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;}
   .modal-sheet{background:linear-gradient(160deg,#2a0808,#3d0a0a);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:500px;border-top:2px solid var(--orange);}
   .modal-title{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:var(--orange2);margin-bottom:16px;text-align:center;}
   .page-title{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;color:var(--orange2);margin-bottom:16px;}
@@ -1440,6 +1442,9 @@ export default function App() {
   const [savedPin, setSavedPin] = useState(() => localStorage.getItem('rgo_pin')||'');
   const [maintenance, setMaintenance] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [showVersionNotes, setShowVersionNotes] = useState(() => {
+    return localStorage.getItem('rgo_notes_seen') !== '2.2';
+  });
   const [circuits, setCircuits] = useState([]);
   const [activeCircuit, setActiveCircuit] = useState(null);
   const [circuitView, setCircuitView] = useState("list"); // list | create | running
@@ -1488,7 +1493,20 @@ export default function App() {
   const stopSecsRef = useRef(0);
   const timerRef = useRef(null);
 
-  useEffect(() => { return onAuthStateChanged(auth, u => { setUser(u); setAuthLoading(false); }); }, []);
+  useEffect(() => {
+    return onAuthStateChanged(auth, async u => {
+      if (u) {
+        // Force logout on new version
+        const storedVersion = localStorage.getItem('rgo_version');
+        if (storedVersion !== '2.2') {
+          await signOut(auth);
+          localStorage.setItem('rgo_version', '2.2');
+          return;
+        }
+      }
+      setUser(u); setAuthLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setShowSplash(false), 2500);
@@ -2347,7 +2365,7 @@ export default function App() {
         <h2 style={{textAlign:"center",color:"var(--orange2)",marginBottom:20,fontFamily:"Montserrat"}}>🔐 Code PIN</h2>
         {pinError && <div className="login-error">Code incorrect</div>}
         <div className="field">
-          <input type="password" className="input" placeholder="Entrez votre PIN" value={pinInput} inputMode="numeric"
+          <input type="password" className="input" placeholder="Entrez votre PIN" value={pinInput} inputMode="numeric" autoComplete="off"
             onChange={e=>setPinInput(e.target.value)} onKeyDown={e=>{
               if (e.key==="Enter") {
                 if (pinInput===savedPin) { setPinUnlocked(true); setPinInput(''); setPinError(false); }
@@ -2368,6 +2386,63 @@ export default function App() {
   return (
     <>
       <style>{CSS}</style>
+      {/* Version notes */}
+      {user && showVersionNotes && !showSplash && (
+        <div className="version-modal">
+          <div className="version-card">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <div style={{fontFamily:"Montserrat",fontWeight:900,fontSize:18,color:"var(--orange2)"}}>🆕 Nouveautés v2.2</div>
+              <button onClick={()=>{{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);}} } style={{background:"none",border:"none",color:"var(--muted)",fontSize:24,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{fontSize:13,lineHeight:1.8,color:"var(--light)"}}>
+              <div style={{marginBottom:8}}>🏫 <strong>Circuits scolaires</strong> — Guidage GPS immersif avec instructions vocales 🔊/🔇</div>
+              <div style={{marginBottom:8}}>🎯 Détection automatique des arrêts (5 secondes)</div>
+              <div style={{marginBottom:8}}>🔵 Points Via invisibles pendant le guidage</div>
+              <div style={{marginBottom:8}}>✨ <strong>Splash screen</strong> au démarrage</div>
+              <div style={{marginBottom:8}}>📍 Carte pour pointer une adresse dans le carnet</div>
+              <div style={{marginBottom:8}}>👁️ Visualisation circuit sans lancer le guidage</div>
+              <div style={{marginBottom:8}}>🔐 PIN — plus de suggestion de mot de passe</div>
+            </div>
+            <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={()=>{{localStorage.setItem('rgo_notes_seen','2.2');setShowVersionNotes(false);}}}}>
+              C'est parti ! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Onboarding */}
+      {user && showOnboarding && !showSplash && (
+        <div className="version-modal">
+          <div className="version-card" style={{textAlign:"center"}}>
+            {(()=>{
+              const slides=[
+                {icon:"🚌",title:"Bienvenue sur RGO Compagnon",desc:"Votre carnet de route numérique pour conducteur de car."},
+                {icon:"📅",title:"Calendrier & Missions",desc:"Planifiez vos missions, saisissez les km et suivez votre activité."},
+                {icon:"🗺️",title:"GPS en temps réel",desc:"Suivez votre itinéraire avec tracé GPS et guidage."},
+                {icon:"🏫",title:"Circuits scolaires",desc:"Créez des circuits avec arrêts et Via. Guidage vocal automatique."},
+                {icon:"📍",title:"Carnet d'adresses",desc:"Enregistrez vos adresses fréquentes pour les réutiliser."},
+                {icon:"⛽",title:"Carburant & Stats",desc:"Suivez vos pleins et consultez votre consommation L/100km."},
+                {icon:"✅",title:"C'est parti !",desc:"Tout est prêt. Bonne route ! 🚌"},
+              ];
+              const s=slides[onboardingStep];
+              return (<>
+                <div style={{fontSize:60,marginBottom:16}}>{s.icon}</div>
+                <div style={{fontFamily:"Montserrat",fontWeight:900,fontSize:18,color:"var(--orange2)",marginBottom:12}}>{s.title}</div>
+                <div style={{fontSize:14,color:"var(--light)",lineHeight:1.7,marginBottom:24}}>{s.desc}</div>
+                <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:20}}>
+                  {slides.map((_,i)=><div key={i} className={"onboarding-dot"+(i===onboardingStep?" active":"")}/>)}
+                </div>
+                <div style={{display:"flex",gap:10}}>
+                  {onboardingStep>0&&<button className="btn btn-secondary" style={{flex:1}} onClick={()=>setOnboardingStep(i=>i-1)}>← Retour</button>}
+                  <button className="btn btn-primary" style={{flex:2}} onClick={()=>{
+                    if(onboardingStep<slides.length-1) setOnboardingStep(i=>i+1);
+                    else {localStorage.setItem('rgo_onboarding_done','1');setShowOnboarding(false);}
+                  }}>{onboardingStep<slides.length-1?"Suivant →":"Démarrer 🚀"}</button>
+                </div>
+              </>);
+            })()}
+          </div>
+        </div>
+      )}
       {/* Splash screen */}
       {showSplash && (
         <div className={"splash-screen"+(authLoading?"":" hide")} onClick={()=>setShowSplash(false)}>
@@ -2492,6 +2567,7 @@ export default function App() {
               else if (pin.length>=4) { localStorage.setItem('rgo_pin',pin); setSavedPin(pin); showToast("✅ PIN défini !"); }
               else showToast("⚠️ PIN trop court (min 4 chiffres)");
             }} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",fontSize:11,marginRight:8}}>🔐 PIN</button>
+            <button onClick={()=>setShowSettings(true)} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",fontSize:18,marginRight:4}}>⚙️</button>
             <button onClick={handleLogout} style={{background:"none",border:"none",color:"var(--muted)",cursor:"pointer",fontSize:11,textDecoration:"underline"}}>Déconnexion</button>
           </div>
         </div>
@@ -2518,6 +2594,58 @@ export default function App() {
           ))}
         </nav>
       </div>
+      {/* Settings modal */}
+      {showSettings && (
+        <div className="modal-overlay" onClick={()=>setShowSettings(false)}>
+          <div className="modal-sheet" onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div className="modal-title" style={{margin:0}}>⚙️ Réglages</div>
+              <button onClick={()=>setShowSettings(false)} style={{background:"none",border:"none",color:"var(--muted)",fontSize:22,cursor:"pointer"}}>✕</button>
+            </div>
+            {/* Profile */}
+            <div style={{padding:"12px 0",borderBottom:"1px solid var(--border)"}}>
+              <div style={{fontSize:11,color:"var(--muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Profil</div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div className="user-avatar" style={{width:40,height:40,fontSize:16}}>{user?.email?.[0]?.toUpperCase()}</div>
+                <div>
+                  <div style={{fontFamily:"Montserrat",fontWeight:700,fontSize:14}}>{user?.email}</div>
+                  <div style={{fontSize:11,color:"var(--muted)"}}>{user?.email === "cedrikk35@gmail.com" ? "👑 Administrateur" : "Conducteur"}</div>
+                </div>
+              </div>
+            </div>
+            {/* PIN */}
+            <div style={{padding:"12px 0",borderBottom:"1px solid var(--border)"}}>
+              <div style={{fontSize:11,color:"var(--muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Code PIN</div>
+              <div style={{display:"flex",gap:8}}>
+                <button className="btn btn-secondary btn-sm" style={{flex:1}} onClick={()=>{
+                  const pin=prompt(savedPin?"Nouveau PIN (vide pour supprimer) :":"Définir un code PIN (4 chiffres) :");
+                  if(pin===null) return;
+                  if(pin===""){localStorage.removeItem('rgo_pin');setSavedPin('');showToast("PIN supprimé");}
+                  else if(pin.length>=4){localStorage.setItem('rgo_pin',pin);setSavedPin(pin);showToast("✅ PIN défini !");}
+                  else showToast("⚠️ Minimum 4 chiffres");
+                }}>{savedPin?"🔐 Modifier le PIN":"🔐 Activer le PIN"}</button>
+                {savedPin&&<button className="btn btn-danger btn-sm" onClick={()=>{localStorage.removeItem('rgo_pin');setSavedPin('');showToast("PIN supprimé");}}>Désactiver</button>}
+              </div>
+            </div>
+            {/* Tutorial */}
+            <div style={{padding:"12px 0",borderBottom:"1px solid var(--border)"}}>
+              <div style={{fontSize:11,color:"var(--muted)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Aide</div>
+              <button className="btn btn-secondary btn-sm btn-full" onClick={()=>{
+                localStorage.removeItem('rgo_onboarding_done');
+                setOnboardingStep(0); setShowOnboarding(true); setShowSettings(false);
+              }}>🎓 Revoir le tutoriel</button>
+            </div>
+            {/* App info */}
+            <div style={{padding:"12px 0",textAlign:"center"}}>
+              <div style={{fontSize:12,color:"var(--muted)"}}>RGO Compagnon v2.2</div>
+              <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>Carnet de route conducteur</div>
+            </div>
+            <button className="btn btn-danger btn-full" style={{marginTop:8}} onClick={()=>{handleLogout();setShowSettings(false);}}>
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      )}
       <div className={"toast"+(toast?" show":"")}>{toast}</div>
     </>
   );
