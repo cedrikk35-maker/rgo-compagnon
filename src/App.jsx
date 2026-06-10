@@ -1501,6 +1501,8 @@ export default function App() {
         if (storedVersion !== '2.2') {
           await signOut(auth);
           localStorage.setItem('rgo_version', '2.2');
+          setUser(null);
+          setAuthLoading(false);
           return;
         }
       }
