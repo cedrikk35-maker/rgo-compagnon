@@ -1,0 +1,32 @@
+# RGO Compagnon 🚌
+
+## Comment déployer l'application
+
+### Prérequis
+- Node.js installé (nodejs.org)
+
+### Déploiement (une seule fois)
+
+1. **Dézippez** ce dossier sur votre Bureau
+2. **Double-cliquez** sur le fichier `DEPLOYER.bat`
+3. Une fenêtre noire s'ouvre et fait tout automatiquement
+4. Quand elle demande de vous connecter à Firebase → connectez-vous avec votre compte Google
+5. À la fin, votre app est accessible sur : https://rgo-compgnon.web.app
+
+### Installer sur Android
+
+1. Ouvrez **Chrome** sur votre téléphone
+2. Allez sur https://rgo-compgnon.web.app
+3. Appuyez sur les **3 points** en haut à droite
+4. Appuyez sur **"Ajouter à l'écran d'accueil"**
+5. L'icône RGO apparaît sur votre téléphone ! ✅
+
+### Partager avec des collègues
+
+Envoyez-leur simplement le lien : **https://rgo-compgnon.web.app**
+Ils peuvent faire la même chose pour l'installer sur leur téléphone.
+
+### Mise à jour de l'app
+
+Si vous modifiez l'app et voulez mettre à jour :
+- Double-cliquez à nouveau sur `DEPLOYER.bat`
